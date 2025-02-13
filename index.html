@@ -1,0 +1,164 @@
+# Install required libraries
+!pip install qrcode[pil]
+
+import qrcode
+from IPython.display import display, HTML
+import base64
+from io import BytesIO
+
+# Define the fields as per the form
+fields = [
+    "HR Col No.",
+    "Batch No.",
+    "Grade",
+    "Heat No.",
+    "Only Thickness",
+    "Finish",
+    "Edge Condition",
+    "Quality",
+    "QA Inspector",
+    "Work Center",
+    "Sample Location",
+    "Remarks"
+]
+
+# Collect data from user input
+data = {}
+for field in fields:
+    data[field] = input(f"Enter value for {field}: ")
+
+# Generate the data string for the QR code
+qr_data = "\n".join([f"{field}: {value}" for field, value in data.items()])
+
+# Create the QR code
+qr = qrcode.QRCode(
+    version=1,
+    error_correction=qrcode.constants.ERROR_CORRECT_L,
+    box_size=10,
+    border=4,
+)
+qr.add_data(qr_data)
+qr.make(fit=True)
+
+# Convert the QR code image to a base64 string
+img = qr.make_image(fill_color="black", back_color="white")
+buffered = BytesIO()
+img.save(buffered, format="PNG")
+img_base64 = base64.b64encode(buffered.getvalue()).decode()
+
+# Generate the HTML and CSS dynamically
+html_code = f"""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Label</title>
+    <style>
+        body {{
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 20px;
+        }}
+        .label-container {{
+            width: 50%;
+            padding-right: 20px;
+        }}
+        .label-container h2 {{
+            margin-bottom: 20px;
+        }}
+        .label-container table {{
+            width: 100%;
+            border-collapse: collapse;
+        }}
+        .label-container th, .label-container td {{
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }}
+        .label-container th {{
+            background-color: #f4f4f4;
+        }}
+        .qr-code-container {{
+            width: 50%;
+            text-align: center;
+        }}
+        .qr-code-container img {{
+            max-width: 100%;
+            height: auto;
+        }}
+    </style>
+</head>
+<body>
+    <div class="label-container">
+        <h2>QR Code Label</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Field Name</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>HR Col No.</td>
+                    <td>{data['HR Col No.']}</td>
+                </tr>
+                <tr>
+                    <td>Batch No.</td>
+                    <td>{data['Batch No.']}</td>
+                </tr>
+                <tr>
+                    <td>Grade</td>
+                    <td>{data['Grade']}</td>
+                </tr>
+                <tr>
+                    <td>Heat No.</td>
+                    <td>{data['Heat No.']}</td>
+                </tr>
+                <tr>
+                    <td>Only Thickness</td>
+                    <td>{data['Only Thickness']}</td>
+                </tr>
+                <tr>
+                    <td>Finish</td>
+                    <td>{data['Finish']}</td>
+                </tr>
+                <tr>
+                    <td>Edge Condition</td>
+                    <td>{data['Edge Condition']}</td>
+                </tr>
+                <tr>
+                    <td>Quality</td>
+                    <td>{data['Quality']}</td>
+                </tr>
+                <tr>
+                    <td>QA Inspector</td>
+                    <td>{data['QA Inspector']}</td>
+                </tr>
+                <tr>
+                    <td>Work Center</td>
+                    <td>{data['Work Center']}</td>
+                </tr>
+                <tr>
+                    <td>Sample Location</td>
+                    <td>{data['Sample Location']}</td>
+                </tr>
+                <tr>
+                    <td>Remarks</td>
+                    <td>{data['Remarks']}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="qr-code-container">
+        <img src="data:image/png;base64,{img_base64}" alt="QR Code">
+    </div>
+</body>
+</html>
+"""
+
+# Display the HTML in Google Colab
+display(HTML(html_code))
